@@ -3,7 +3,7 @@ UT ECE1778 Final Project
 
 Group Members:
 
-Lixin Li \
-Lihao Xue \
-Yiwei Cao \ 
-Zuhao Zhang \
+Lixin Li 
+Lihao Xue 
+Yiwei Cao 
+Zuhao Zhang 

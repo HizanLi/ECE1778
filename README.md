@@ -14,23 +14,17 @@ e.g.:
 Modern embedded systems are rapidly evolving and require advanced solutions for ...  
 Our group is interested in ... because ...)
 
----
-
 ## 2. Objectives
 
 - **Objective 1:** (State your first key objective)
 - **Objective 2:** (Second objective)
 - **Objective 3:** (And so on…)
 
----
-
 ## 3. Features
 
 - **Feature 1:** (Describe the primary features your project will have)
 - **Feature 2:** (Add bullet points as needed)
 - **Feature 3:** ...
-
----
 
 ## 4. Tentative Plan
 

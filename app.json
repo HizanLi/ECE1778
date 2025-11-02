@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "GeoClaim",
+    "slug": "geoclaim",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.geoclaim.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "GeoClaim needs your location to track your movement and claim territories in the real world.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "GeoClaim needs continuous location access to track your territory claims even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "GeoClaim needs continuous location access to track your territory claims."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.geoclaim.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "POST_NOTIFICATIONS"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "geoclaim",
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}

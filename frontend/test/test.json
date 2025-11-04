@@ -1,0 +1,47 @@
+{
+    "user_email": "test1@example.com",
+    "user_name": "张三",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.390, 39.920], [116.395, 39.920], [116.395, 39.925], [116.390, 39.925], [116.390, 39.920] ]
+        ]
+    },
+    "message": "测试A区"
+}
+
+{
+    "user_email": "test2@example.com",
+    "user_name": "李四",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.393, 39.922], [116.398, 39.922], [116.398, 39.927], [116.393, 39.927], [116.393, 39.922] ]
+        ]
+    },
+    "message": "测试B区-与A区部分重叠"
+}
+
+{
+    "user_email": "test3@example.com",
+    "user_name": "王五",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.388, 39.918], [116.400, 39.918], [116.400, 39.928], [116.388, 39.928], [116.388, 39.918] ]
+        ]
+    },
+    "message": "测试C区-完全覆盖"
+}
+
+{
+    "user_email": "test4@example.com",
+    "user_name": "赵六",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.410, 39.930], [116.415, 39.930], [116.415, 39.935], [116.410, 39.935], [116.410, 39.930] ]
+        ]
+    },
+    "message": "测试D区-远离A/B/C"
+}

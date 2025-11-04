@@ -2,7 +2,8 @@ import 'react-native-url-polyfill/auto'
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import Auth from './components/Auth'
-import { View, Text } from 'react-native'
+import Main from './components/Main' // 你的主页面组件
+import { View } from 'react-native'
 import { Session } from '@supabase/supabase-js'
 
 export default function App() {
@@ -12,16 +13,25 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
-
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
   }, [])
 
   return (
-    <View>
-      <Auth />
-      {session && session.user && <Text>{session.user.id}</Text>}
+    <View style={{
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24, // 可选，让内容不顶边
+    }}>
+      {session && session.user
+        ? <Main session={session} />
+        : <Auth />
+      }
     </View>
   )
 }

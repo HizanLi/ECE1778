@@ -102,3 +102,15 @@ export async function update_username_by_email({
     throw new Error(err.message || '网络请求失败');
   }
 }
+
+export async function fetchUsernameByUserId(user_id: string) {
+  const response = await fetch('https://sguujchuqsbempxbdjif.supabase.co/functions/v1/fetch-username', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Server error');
+  // success
+  return data.user_name;
+}

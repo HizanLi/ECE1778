@@ -1,6 +1,6 @@
 {
-    "user_email": "test1@example.com",
-    "user_name": "张三",
+    "user_id" : "09c73675-7e12-41f4-ab69-92016727306c",
+    "user_email": "l2542293790@gmail.com",
     "location": {
         "type": "Polygon",
         "coordinates": [
@@ -11,8 +11,8 @@
 }
 
 {
-    "user_email": "test2@example.com",
-    "user_name": "李四",
+    "user_id" : "13fb43c1-9920-49ef-a083-fe9f4f667bfe",
+    "user_email": "davidzhangzuhao@gmail.com",
     "location": {
         "type": "Polygon",
         "coordinates": [
@@ -23,8 +23,8 @@
 }
 
 {
-    "user_email": "test3@example.com",
-    "user_name": "王五",
+    "user_id" : "24c1afc6-0ee5-43bf-9547-239f81640ea2",
+    "user_email": "l2542293ss790@gmail.com",
     "location": {
         "type": "Polygon",
         "coordinates": [
@@ -35,8 +35,8 @@
 }
 
 {
-    "user_email": "test4@example.com",
-    "user_name": "赵六",
+    "user_id" : "29401482-0d8f-4233-a04a-a4abee598f03",
+    "user_email": "testwww@gmail.com",
     "location": {
         "type": "Polygon",
         "coordinates": [

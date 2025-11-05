@@ -7,22 +7,23 @@ import { colors } from '../../constants/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithEmail, signUpWithEmail} = useAuth();
 
   const handleEmailSignIn = async () => {
     if (!email) {
       Alert.alert('Error', 'Please enter your email address');
       return;
     }
+    if (!password) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
 
     setLoading(true);
     try {
-      await signIn(email);
-      Alert.alert(
-        'Check your email',
-        'We sent you a magic link to sign in. Please check your email and click the link to continue.'
-      );
+      await signInWithEmail(email, password);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to send magic link');
     } finally {
@@ -30,12 +31,20 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleEmailSignUp = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await signUpWithEmail(email, password);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to sign in with Google');
+      Alert.alert('Error', error.message || 'Failed to sign up');
     } finally {
       setLoading(false);
     }
@@ -66,6 +75,17 @@ export default function LoginScreen() {
             editable={!loading}
           />
 
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={globalStyles.input}
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+            editable={!loading}
+          />
+
           <Button
             title="Send Magic Link"
             onPress={handleEmailSignIn}
@@ -80,8 +100,8 @@ export default function LoginScreen() {
           </View>
 
           <Button
-            title="Continue with Google"
-            onPress={handleGoogleSignIn}
+            title="Sign Up with Email"
+            onPress={handleEmailSignUp}
             variant="secondary"
             loading={loading}
           />

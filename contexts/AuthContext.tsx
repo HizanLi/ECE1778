@@ -2,13 +2,15 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { User } from '../types';
+import { Alert} from 'react-native'
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
   signIn: (email: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -73,30 +75,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'geoclaim://auth/callback',
-          skipBrowserRedirect: true,
-        },
-      });
-      
-      if (error) throw error;
-      
-      // For mobile apps, we need to use the provider token URL
-      if (data?.url) {
-        // This would typically open in a browser for OAuth
-        // For full implementation, you'd need to use expo-auth-session or similar
-        console.log('OAuth URL:', data.url);
-        throw new Error('Google OAuth requires additional setup for mobile. Please use email magic link authentication for now.');
-      }
-    } catch (error: any) {
-      console.error('Google sign in error:', error);
-      throw error;
+  
+  const signInWithEmail = async (email: string, password: string) => {
+    setLoading(true)
+    const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+    })
+    if (error) {
+        Alert.alert(error.message)
+    } else {
+        Alert.alert("Successfully signed in")
     }
-  };
+    setLoading(false)
+  }
+
+  const signUpWithEmail= async (email: string, password: string) => {
+    setLoading(true)
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    })
+
+    if (error) 
+      {Alert.alert(error.message)}
+    else
+      {if (!session) Alert.alert('Please check your inbox for email verification!')}
+    setLoading(false)
+  }
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -111,7 +120,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         signIn,
-        signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
         signOut,
       }}
     >

@@ -74,13 +74,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'geoclaim://auth/callback',
-      },
-    });
-    if (error) throw error;
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'geoclaim://auth/callback',
+          skipBrowserRedirect: true,
+        },
+      });
+      
+      if (error) throw error;
+      
+      // For mobile apps, we need to use the provider token URL
+      if (data?.url) {
+        // This would typically open in a browser for OAuth
+        // For full implementation, you'd need to use expo-auth-session or similar
+        console.log('OAuth URL:', data.url);
+        throw new Error('Google OAuth requires additional setup for mobile. Please use email magic link authentication for now.');
+      }
+    } catch (error: any) {
+      console.error('Google sign in error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {

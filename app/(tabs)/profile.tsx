@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Switch, Alert, TextInput } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
+import { useLocation } from '../../contexts/LocationContext';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { globalStyles } from '../../styles/globalStyles';
@@ -9,9 +10,13 @@ import { colors } from '../../constants/colors';
 import { scheduleDailyReminder, cancelAllNotifications } from '../../utils/notifications';
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateProfile } = useAuth();
   const { state, setGameMode, updateSettings } = useGame();
+  const { isSimulationMode, toggleSimulationMode, changeSimulationRoute, isTracking } = useLocation();
   const [signingOut, setSigningOut] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [username, setUsername] = useState(user?.username || '');
+  const [saving, setSaving] = useState(false);
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -31,6 +36,28 @@ export default function ProfileScreen() {
         },
       },
     ]);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!username.trim()) {
+      Alert.alert('Error', 'Username cannot be empty');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updateProfile({ username: username.trim() });
+      setEditing(false);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setUsername(user?.username || '');
+    setEditing(false);
   };
 
   const toggleGameMode = async () => {
@@ -81,7 +108,42 @@ export default function ProfileScreen() {
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{user.username.charAt(0).toUpperCase()}</Text>
         </View>
-        <Text style={styles.username}>{user.username}</Text>
+        {editing ? (
+          <View style={styles.editContainer}>
+            <TextInput
+              style={styles.usernameInput}
+              value={username}
+              onChangeText={setUsername}
+              placeholder="Enter your username"
+              autoCapitalize="none"
+              maxLength={30}
+            />
+            <View style={styles.editButtons}>
+              <Button
+                title="Cancel"
+                onPress={handleCancelEdit}
+                variant="secondary"
+                style={styles.editButton}
+              />
+              <Button
+                title="Save"
+                onPress={handleSaveProfile}
+                loading={saving}
+                style={styles.editButton}
+              />
+            </View>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.username}>{user.username}</Text>
+            <Button
+              title="Edit Name"
+              onPress={() => setEditing(true)}
+              variant="secondary"
+              style={styles.editNameButton}
+            />
+          </>
+        )}
         <Text style={styles.email}>{user.email}</Text>
       </View>
 
@@ -101,6 +163,44 @@ export default function ProfileScreen() {
           <Text style={globalStyles.statLabel}>Day Streak</Text>
         </View>
       </View>
+
+      <Card>
+        <Text style={styles.sectionTitle}>Developer Settings</Text>
+        <View style={styles.settingRow}>
+          <View style={styles.settingInfo}>
+            <Text style={styles.settingLabel}>
+              🧪 Location Simulation Mode
+            </Text>
+            <Text style={styles.settingDescription}>
+              {isSimulationMode 
+                ? 'Simulating movement in Toronto' 
+                : 'Using real GPS location'}
+            </Text>
+          </View>
+          <Switch
+            value={isSimulationMode}
+            onValueChange={toggleSimulationMode}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            disabled={isTracking}
+          />
+        </View>
+        {isSimulationMode && (
+          <View style={[styles.settingRow, styles.settingRowLast]}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Change Route</Text>
+              <Text style={styles.settingDescription}>
+                Switch to a different Toronto route
+              </Text>
+            </View>
+            <Button
+              title="New Route"
+              onPress={changeSimulationRoute}
+              variant="secondary"
+              style={styles.smallButton}
+            />
+          </View>
+        )}
+      </Card>
 
       <Card>
         <Text style={styles.sectionTitle}>Game Mode</Text>
@@ -195,6 +295,43 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 14,
     color: colors.textSecondary,
+    marginTop: 4,
+  },
+  editContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  usernameInput: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    width: '80%',
+    textAlign: 'center',
+    backgroundColor: colors.background,
+  },
+  editButtons: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 8,
+  },
+  editButton: {
+    flex: 1,
+    minWidth: 100,
+  },
+  editNameButton: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  smallButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   sectionTitle: {
     fontSize: 16,

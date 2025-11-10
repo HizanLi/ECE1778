@@ -12,6 +12,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,10 +57,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If user doesn't exist, create one
+        if (error.code === 'PGRST116') {
+          await createUserProfile(userId);
+          return;
+        }
+        throw error;
+      }
       setUser(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createUserProfile = async (userId: string) => {
+    try {
+      // Get auth user email
+      const { data: authData } = await supabase.auth.getUser();
+      const email = authData.user?.email || '';
+      
+      // Generate default username from email
+      const username = email.split('@')[0] || 'User';
+      Alert.alert("Creating user profile for " + username);
+      const { data, error } = await supabase
+        .from('users')
+         .upsert({
+          id: userId,
+          email: email,
+          username: username,
+          total_area: 0,
+          total_claims: 0,
+          streak_days: 0,
+        }, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (error) throw error.details || error;
+      Alert.alert("Successfully created profile for " + username);
+      setUser(data);
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      Alert.alert('Error', 'Failed to create user profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -78,39 +119,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
     })
     if (error) {
         Alert.alert(error.message)
+        setLoading(false)
     } else {
+        // Ensure user profile exists
+        Alert.alert(data.user.id)
+        if (data.user) {
+          await fetchUserProfile(data.user.id);
+        }
         Alert.alert("Successfully signed in")
     }
-    setLoading(false)
   }
 
-  const signUpWithEmail= async (email: string, password: string) => {
+  const signUpWithEmail = async (email: string, password: string) => {
     setLoading(true)
     const {
-      data: { session },
+      data: { session, user },
       error,
     } = await supabase.auth.signUp({
       email: email,
       password: password,
     })
 
-    if (error) 
-      {Alert.alert(error.message)}
-    else
-      {if (!session) Alert.alert('Please check your inbox for email verification!')}
-    setLoading(false)
+    if (error) {
+      Alert.alert(error.message)
+      setLoading(false)
+    } else {
+      if (!session) {
+        Alert.alert('Please check your inbox for email verification!')
+        setLoading(false)
+      } else if (user) {
+        // Create user profile immediately for confirmed users
+        await createUserProfile(user.id);
+      }
+    }
   }
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setUser(null);
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setUser(data);
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    }
   };
 
   return (
@@ -123,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithEmail,
         signUpWithEmail,
         signOut,
+        updateProfile,
       }}
     >
       {children}

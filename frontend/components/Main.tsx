@@ -5,8 +5,7 @@ import {
   update_username_by_user_id,
   fetchUserinfoUserId,
   fetchOccupiedAreas,
-  fetchLeaderboards,
-  fetchTopUsers
+  getLeaderboards
 } from '../lib/api';
 import { Session } from '@supabase/supabase-js'
 import { use } from 'react';
@@ -79,9 +78,9 @@ export default function Main({ session }: { session: Session }) {
 
   const getLeaderboards = async () => {
     try {
-      const result = await fetchTopUsers();
+      const result = await getLeaderboards();
       Alert.alert('Top Users', JSON.stringify(result));
-      console.log('fetchTopUsers result:', result);
+      console.log('getLeaderboards result:', result);
     } catch (err: any) {
       Alert.alert('错误', err.message || String(err));
     }

@@ -34,7 +34,7 @@ export default function Main({ session }: { session: Session }) {
     })
       Alert.alert('结果', String(result))
     } catch (err: any) {
-      console.error('插入区域时报错:', err)
+      console.error('插入区域时报错:', err?.message || String(err))
       Alert.alert('错误', err.message || String(err))
     }
   }
@@ -76,7 +76,7 @@ export default function Main({ session }: { session: Session }) {
 
 
 
-  const getLeaderboards = async () => {
+  const handleGetLeaderboards = async () => {
     try {
       const result = await getLeaderboards();
       Alert.alert('Top Users', JSON.stringify(result));
@@ -85,6 +85,7 @@ export default function Main({ session }: { session: Session }) {
       Alert.alert('错误', err.message || String(err));
     }
   };
+
 
   return (
     <View style={{ alignItems: 'center' }}>
@@ -95,7 +96,7 @@ export default function Main({ session }: { session: Session }) {
         <Button title="更新用户名" onPress={handleUpdateUsername} />
         <Button title="获取用户信息" onPress={getUserinfo} />
         <Button title="获取区域" onPress={getAreas} />
-        <Button title="排行榜" onPress={getLeaderboards} />
+        <Button title="排行榜" onPress={handleGetLeaderboards} />
       </View>
     </View>
   )

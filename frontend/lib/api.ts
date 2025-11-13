@@ -299,8 +299,16 @@ export async function getLeaderboards() {
     // data should be an array of { user_name, total_area }
     return data as { user_name: string; total_area: number }[];
   } catch (error) {
-    // handle error here or rethrow
-    console.error(error);
+    try {
+      console.error(
+        error instanceof Error
+          ? error.message
+          : JSON.stringify(error, null, 2)
+      );
+    } catch (logError) {
+      // Fallback in case even this fails
+      console.error('Could not log error');
+    }
     throw error;
   }
 }

@@ -9,7 +9,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signInWithEmail, signUpWithEmail} = useAuth();
+  const { signIn, signUp} = useAuth();
 
   const handleEmailSignIn = async () => {
     if (!email) {
@@ -23,7 +23,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
+      await signIn(email, password);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to send magic link');
     } finally {
@@ -42,7 +42,7 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await signUpWithEmail(email, password);
+      await signUp(email, password);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to sign up');
     } finally {

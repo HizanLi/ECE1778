@@ -28,13 +28,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="activity"
-        options={{
-          title: 'Activity',
-          tabBarIcon: ({ color }) => <TabIcon name="📊" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="leaderboard"
         options={{
           title: 'Leaderboard',
@@ -46,6 +39,13 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabIcon name="👤" color={color} />,
+        }}
+      />
+      {/* Activity tab removed - new backend doesn't support activities */}
+      <Tabs.Screen
+        name="activity"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>

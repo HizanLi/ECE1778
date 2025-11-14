@@ -13,7 +13,7 @@ export default function ProfileScreen() {
   const { state, setGameMode, updateSettings } = useGame();
   const [signingOut, setSigningOut] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState(user?.user_name || '');
   const [saving, setSaving] = useState(false);
 
   const handleSignOut = async () => {
@@ -44,7 +44,7 @@ export default function ProfileScreen() {
 
     setSaving(true);
     try {
-      await updateProfile({ username: username.trim() });
+      await updateProfile({ user_name: username.trim() });
       setEditing(false);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update profile');
@@ -54,7 +54,7 @@ export default function ProfileScreen() {
   };
 
   const handleCancelEdit = () => {
-    setUsername(user?.username || '');
+    setUsername(user?.user_name || '');
     setEditing(false);
   };
 
@@ -104,7 +104,7 @@ export default function ProfileScreen() {
     <ScrollView style={globalStyles.container}>
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{user.username.charAt(0).toUpperCase()}</Text>
+          <Text style={styles.avatarText}>{user.user_name.charAt(0).toUpperCase()}</Text>
         </View>
         {editing ? (
           <View style={styles.editContainer}>
@@ -133,7 +133,7 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.username}>{user.username}</Text>
+            <Text style={styles.username}>{user.user_name}</Text>
             <Button
               title="Edit Name"
               onPress={() => setEditing(true)}
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
             />
           </>
         )}
-        <Text style={styles.email}>{user.email}</Text>
+        <Text style={styles.email}>{user.user_email}</Text>
       </View>
 
       <View style={globalStyles.statsContainer}>
@@ -151,14 +151,6 @@ export default function ProfileScreen() {
             {(user.total_area / 1000000).toFixed(2)}
           </Text>
           <Text style={globalStyles.statLabel}>km² claimed</Text>
-        </View>
-        <View style={globalStyles.statItem}>
-          <Text style={globalStyles.statValue}>{user.total_claims}</Text>
-          <Text style={globalStyles.statLabel}>Total Claims</Text>
-        </View>
-        <View style={globalStyles.statItem}>
-          <Text style={globalStyles.statValue}>{user.streak_days}</Text>
-          <Text style={globalStyles.statLabel}>Day Streak</Text>
         </View>
       </View>
 

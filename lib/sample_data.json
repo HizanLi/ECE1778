@@ -1,0 +1,47 @@
+{
+    "user_id" : "09c73675-7e12-41f4-ab69-92016727306c",
+    "user_email": "l2542293790@gmail.com",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.390, 39.920], [116.395, 39.920], [116.395, 39.925], [116.390, 39.925], [116.390, 39.920] ]
+        ]
+    },
+    "message": "测试A区"
+}
+
+{
+    "user_id" : "13fb43c1-9920-49ef-a083-fe9f4f667bfe",
+    "user_email": "davidzhangzuhao@gmail.com",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.393, 39.922], [116.398, 39.922], [116.398, 39.927], [116.393, 39.927], [116.393, 39.922] ]
+        ]
+    },
+    "message": "测试B区-与A区部分重叠"
+}
+
+{
+    "user_id" : "24c1afc6-0ee5-43bf-9547-239f81640ea2",
+    "user_email": "l2542293ss790@gmail.com",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.388, 39.918], [116.400, 39.918], [116.400, 39.928], [116.388, 39.928], [116.388, 39.918] ]
+        ]
+    },
+    "message": "测试C区-完全覆盖"
+}
+
+{
+    "user_id" : "29401482-0d8f-4233-a04a-a4abee598f03",
+    "user_email": "testwww@gmail.com",
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [ [116.410, 39.930], [116.415, 39.930], [116.415, 39.935], [116.410, 39.935], [116.410, 39.930] ]
+        ]
+    },
+    "message": "测试D区-远离A/B/C"
+}

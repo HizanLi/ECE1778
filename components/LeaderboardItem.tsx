@@ -5,13 +5,14 @@ import { colors } from '../constants/colors';
 
 interface LeaderboardItemProps {
   entry: LeaderboardEntry;
-  currentUserId?: string;
+  currentUserName?: string;
 }
 
-export function LeaderboardItem({ entry, currentUserId }: LeaderboardItemProps) {
-  const isCurrentUser = entry.user_id === currentUserId;
+export function LeaderboardItem({ entry, currentUserName }: LeaderboardItemProps) {
+  const isCurrentUser = entry.user_name === currentUserName;
 
-  const getRankIcon = (rank: number) => {
+  const getRankIcon = (rank?: number) => {
+    if (!rank) return '#-';
     switch (rank) {
       case 1:
         return '🥇';
@@ -30,15 +31,15 @@ export function LeaderboardItem({ entry, currentUserId }: LeaderboardItemProps) 
         <Text style={styles.rank}>{getRankIcon(entry.rank)}</Text>
       </View>
       <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{entry.username.charAt(0).toUpperCase()}</Text>
+        <Text style={styles.avatarText}>{entry.user_name.charAt(0).toUpperCase()}</Text>
       </View>
       <View style={styles.info}>
         <Text style={[styles.username, isCurrentUser && styles.currentUserText]}>
-          {entry.username}
+          {entry.user_name}
           {isCurrentUser && ' (You)'}
         </Text>
         <Text style={styles.stats}>
-          {(entry.total_area / 1000000).toFixed(2)} km² • {entry.total_claims} claims
+          {(entry.total_area / 1000000).toFixed(2)} km²
         </Text>
       </View>
     </View>

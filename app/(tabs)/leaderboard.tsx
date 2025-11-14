@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
-import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { LeaderboardItem } from '../../components/LeaderboardItem';
 import { LeaderboardEntry } from '../../types';
 import { globalStyles } from '../../styles/globalStyles';
 import { colors } from '../../constants/colors';
+import { getLeaderboard } from '../../lib/api';
 
 export default function LeaderboardScreen() {
   const { user } = useAuth();
@@ -19,21 +19,12 @@ export default function LeaderboardScreen() {
 
   const fetchLeaderboard = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, username, total_area, total_claims, avatar_url')
-        .order('total_area', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-
+      const data = await getLeaderboard();
+      
+      // Add rank to each entry
       const leaderboardData: LeaderboardEntry[] = data.map((entry, index) => ({
-        user_id: entry.id,
-        username: entry.username,
-        total_area: entry.total_area,
-        total_claims: entry.total_claims,
+        ...entry,
         rank: index + 1,
-        avatar_url: entry.avatar_url,
       }));
 
       setLeaderboard(leaderboardData);
@@ -72,9 +63,9 @@ export default function LeaderboardScreen() {
       ) : (
         <FlatList
           data={leaderboard}
-          keyExtractor={(item) => item.user_id}
+          keyExtractor={(item, index) => `${item.user_name}-${index}`}
           renderItem={({ item }) => (
-            <LeaderboardItem entry={item} currentUserId={user?.id} />
+            <LeaderboardItem entry={item} currentUserName={user?.user_name} />
           )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

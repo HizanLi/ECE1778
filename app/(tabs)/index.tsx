@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
-import MapView, { Marker, Polyline, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useLocation } from '../../contexts/LocationContext';
 import { useGame } from '../../contexts/GameContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,13 +10,13 @@ import { globalStyles } from '../../styles/globalStyles';
 
 export default function MapScreen() {
   const { currentLocation, isTracking, startTracking, stopTracking, moveNorth, moveSouth, moveEast, moveWest } = useLocation();
-  const { state, claimTerritory, fetchTerritories } = useGame();
+  const { state, claimTerritory, clearTrail, fetchAreas } = useGame();
   const { user } = useAuth();
   const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     if (currentLocation) {
-      fetchTerritories();
+      fetchAreas();
     }
   }, [currentLocation]);
 
@@ -30,11 +30,13 @@ export default function MapScreen() {
 
   const handleStopTracking = () => {
     stopTracking();
+    clearTrail(); // Clear the trail from map when stopping
   };
 
   const handleClaimTerritory = async () => {
     if (state.currentTrail.length < 3) {
       Alert.alert('Not enough points', 'Walk more to create a larger area before claiming');
+      clearTrail(); // Clear the trail if validation fails
       return;
     }
 
@@ -42,8 +44,10 @@ export default function MapScreen() {
     try {
       await claimTerritory();
       Alert.alert('Success!', 'Territory claimed successfully! 🎉');
+      // Trail is already cleared in GameContext.claimTerritory on success
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to claim territory');
+      clearTrail(); // Clear the trail on error
     } finally {
       setClaiming(false);
     }
@@ -91,26 +95,30 @@ export default function MapScreen() {
           />
         )}
 
-        {/* Territories */}
-        {state.territories.map((territory) => (
-          <Circle
-            key={territory.id}
-            center={{
-              latitude: territory.center_lat,
-              longitude: territory.center_lng,
-            }}
-            radius={territory.radius}
-            fillColor={
-              territory.user_id === user?.id
-                ? colors.myTerritory + '40'
-                : colors.enemyTerritory + '40'
-            }
-            strokeColor={
-              territory.user_id === user?.id ? colors.myTerritory : colors.enemyTerritory
-            }
-            strokeWidth={2}
-          />
-        ))}
+        {/* Occupied Areas - Display as polygons */}
+        {state.occupiedAreas.map((area, index) => {
+          // Convert GeoJSON coordinates to react-native-maps format
+          const coordinates = area.location.coordinates[0].map(coord => ({
+            latitude: coord[1],
+            longitude: coord[0],
+          }));
+          
+          return (
+            <Polygon
+              key={`area-${area.user_id}-${index}`}
+              coordinates={coordinates}
+              fillColor={
+                area.user_id === user?.user_id
+                  ? colors.myTerritory + '40'
+                  : colors.enemyTerritory + '40'
+              }
+              strokeColor={
+                area.user_id === user?.user_id ? colors.myTerritory : colors.enemyTerritory
+              }
+              strokeWidth={2}
+            />
+          );
+        })}
       </MapView>
 
       {/* Navigation Controls for Simulation Mode */}

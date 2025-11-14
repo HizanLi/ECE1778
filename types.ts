@@ -1,27 +1,31 @@
-// Core type definitions for GeoClaim
+// Core type definitions for GeoClaim - Updated for new backend
 
 export interface User {
-  id: string;
-  email: string;
-  username: string;
-  created_at: string;
+  user_id: string;
+  user_email: string;
+  user_name: string;
   total_area: number;
-  total_claims: number;
-  streak_days: number;
-  avatar_url?: string;
 }
 
-export interface Territory {
-  id: string;
+export interface OccupiedArea {
   user_id: string;
-  center_lat: number;
-  center_lng: number;
-  radius: number;
-  area: number;
-  created_at: string;
-  updated_at: string;
-  coordinates: Coordinate[];
-  is_active: boolean;
+  user_email: string;
+  user_name: string;
+  location: GeoJSONPolygon;
+  message?: string;
+  status: string;
+  total_area: number;
+}
+
+export interface GeoJSONPolygon {
+  type: 'Polygon';
+  coordinates: number[][][]; // [[[lng, lat], [lng, lat], ...]]
+  crs?: {
+    type: string;
+    properties: {
+      name: string;
+    };
+  };
 }
 
 export interface Coordinate {
@@ -29,42 +33,10 @@ export interface Coordinate {
   longitude: number;
 }
 
-export interface Trail {
-  id: string;
-  user_id: string;
-  coordinates: Coordinate[];
-  created_at: string;
-  is_closed: boolean;
-}
-
-export interface Claim {
-  id: string;
-  user_id: string;
-  territory_id: string;
-  claimed_area: number;
-  captured_from?: string; // user_id if captured from another player
-  created_at: string;
-  coordinates: Coordinate[];
-}
-
-export interface Activity {
-  id: string;
-  user_id: string;
-  type: 'claim' | 'lost' | 'defense';
-  territory_id: string;
-  area_change: number;
-  description: string;
-  created_at: string;
-  other_user_id?: string;
-}
-
 export interface LeaderboardEntry {
-  user_id: string;
-  username: string;
+  user_name: string;
   total_area: number;
-  total_claims: number;
-  rank: number;
-  avatar_url?: string;
+  rank?: number;
 }
 
 export interface NotificationSettings {

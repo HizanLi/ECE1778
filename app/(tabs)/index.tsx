@@ -9,7 +9,7 @@ import { colors } from '../../constants/colors';
 import { globalStyles } from '../../styles/globalStyles';
 
 export default function MapScreen() {
-  const { currentLocation, isTracking, startTracking, stopTracking } = useLocation();
+  const { currentLocation, isTracking, startTracking, stopTracking, moveNorth, moveSouth, moveEast, moveWest } = useLocation();
   const { state, claimTerritory, fetchTerritories } = useGame();
   const { user } = useAuth();
   const [claiming, setClaiming] = useState(false);
@@ -113,14 +113,37 @@ export default function MapScreen() {
         ))}
       </MapView>
 
+      {/* Navigation Controls for Simulation Mode */}
+      {state.gameMode === 'simulation' && isTracking && (
+        <View style={styles.navigationControls}>
+          <TouchableOpacity style={styles.navButton} onPress={moveNorth}>
+            <Text style={styles.navButtonText}>↑</Text>
+          </TouchableOpacity>
+          <View style={styles.navRow}>
+            <TouchableOpacity style={styles.navButton} onPress={moveWest}>
+              <Text style={styles.navButtonText}>←</Text>
+            </TouchableOpacity>
+            <View style={styles.navSpacer} />
+            <TouchableOpacity style={styles.navButton} onPress={moveEast}>
+              <Text style={styles.navButtonText}>→</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.navButton} onPress={moveSouth}>
+            <Text style={styles.navButtonText}>↓</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Controls */}
       <View style={styles.controls}>
         <View style={styles.infoCard}>
           <Text style={styles.infoText}>
-            Mode: {state.gameMode === 'competitive' ? '⚔️ Competitive' : '🌱 Peaceful'}
+            Mode: {state.gameMode === 'competitive' ? '⚔️ Competitive' : '🧪 Simulation'}
           </Text>
-          {isTracking && (
-            <Text style={styles.infoText}>Trail: {state.currentTrail.length} points</Text>
+          {state.gameMode === 'simulation' && isTracking && (
+            <Text style={styles.infoTextSecondary}>
+              Use arrow buttons to navigate
+            </Text>
           )}
         </View>
 
@@ -155,6 +178,38 @@ export default function MapScreen() {
 }
 
 const styles = StyleSheet.create({
+  navigationControls: {
+    position: 'absolute',
+    top: 100,
+    right: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  navButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  navButtonText: {
+    fontSize: 28,
+    color: colors.background,
+    fontWeight: 'bold',
+  },
+  navRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  navSpacer: {
+    width: 56,
+  },
   controls: {
     position: 'absolute',
     bottom: 20,
@@ -176,6 +231,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     fontWeight: '600',
+  },
+  infoTextSecondary: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
   buttonContainer: {
     flexDirection: 'row',

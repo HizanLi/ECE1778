@@ -75,13 +75,13 @@ export interface NotificationSettings {
 }
 
 export interface AppSettings {
-  game_mode: 'competitive' | 'peaceful';
+  game_mode: 'competitive' | 'simulation';
   location_accuracy: 'high' | 'balanced' | 'low';
   map_type: 'standard' | 'satellite' | 'hybrid';
   notifications: NotificationSettings;
 }
 
-export type GameMode = 'competitive' | 'peaceful';
+export type GameMode = 'competitive' | 'simulation';
 
 export interface RealtimeUpdate {
   type: 'claim' | 'territory_lost' | 'leaderboard_update';

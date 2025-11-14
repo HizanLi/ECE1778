@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Switch, Alert, TextInput } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
-import { useLocation } from '../../contexts/LocationContext';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { globalStyles } from '../../styles/globalStyles';
@@ -12,7 +11,6 @@ import { scheduleDailyReminder, cancelAllNotifications } from '../../utils/notif
 export default function ProfileScreen() {
   const { user, signOut, updateProfile } = useAuth();
   const { state, setGameMode, updateSettings } = useGame();
-  const { isSimulationMode, toggleSimulationMode, changeSimulationRoute, isTracking } = useLocation();
   const [signingOut, setSigningOut] = useState(false);
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(user?.username || '');
@@ -61,7 +59,7 @@ export default function ProfileScreen() {
   };
 
   const toggleGameMode = async () => {
-    const newMode = state.gameMode === 'competitive' ? 'peaceful' : 'competitive';
+    const newMode = state.gameMode === 'competitive' ? 'simulation' : 'competitive';
     await setGameMode(newMode);
   };
 
@@ -165,54 +163,16 @@ export default function ProfileScreen() {
       </View>
 
       <Card>
-        <Text style={styles.sectionTitle}>Developer Settings</Text>
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>
-              🧪 Location Simulation Mode
-            </Text>
-            <Text style={styles.settingDescription}>
-              {isSimulationMode 
-                ? 'Simulating movement in Toronto' 
-                : 'Using real GPS location'}
-            </Text>
-          </View>
-          <Switch
-            value={isSimulationMode}
-            onValueChange={toggleSimulationMode}
-            trackColor={{ false: colors.border, true: colors.primary }}
-            disabled={isTracking}
-          />
-        </View>
-        {isSimulationMode && (
-          <View style={[styles.settingRow, styles.settingRowLast]}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>Change Route</Text>
-              <Text style={styles.settingDescription}>
-                Switch to a different Toronto route
-              </Text>
-            </View>
-            <Button
-              title="New Route"
-              onPress={changeSimulationRoute}
-              variant="secondary"
-              style={styles.smallButton}
-            />
-          </View>
-        )}
-      </Card>
-
-      <Card>
         <Text style={styles.sectionTitle}>Game Mode</Text>
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
             <Text style={styles.settingLabel}>
-              {state.gameMode === 'competitive' ? '⚔️ Competitive' : '🌱 Peaceful'}
+              {state.gameMode === 'competitive' ? '⚔️ Competitive' : '🧪 Simulation'}
             </Text>
             <Text style={styles.settingDescription}>
               {state.gameMode === 'competitive'
                 ? 'Capture territory from other players'
-                : 'Expand without conflicts'}
+                : 'Practice mode without competition'}
             </Text>
           </View>
           <Switch

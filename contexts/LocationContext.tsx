@@ -8,12 +8,13 @@ interface LocationContextType {
   currentLocation: Coordinate | null;
   locationPermission: Location.PermissionStatus | null;
   isTracking: boolean;
-  isSimulationMode: boolean;
   requestPermissions: () => Promise<boolean>;
   startTracking: () => Promise<void>;
   stopTracking: () => void;
-  toggleSimulationMode: () => void;
-  changeSimulationRoute: () => void;
+  moveNorth: () => void;
+  moveSouth: () => void;
+  moveEast: () => void;
+  moveWest: () => void;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -22,20 +23,15 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
   const [isTracking, setIsTracking] = useState(false);
-  const [isSimulationMode, setIsSimulationMode] = useState(false);
   const [subscription, setSubscription] = useState<Location.LocationSubscription | null>(null);
-  const [simulationInterval, setSimulationInterval] = useState<NodeJS.Timeout | null>(null);
-  const [simulator] = useState(() => new LocationSimulator(false));
-  const { addTrailPoint } = useGame();
+  const [simulator] = useState(() => new LocationSimulator());
+  const { addTrailPoint, state } = useGame();
 
   useEffect(() => {
     checkPermissions();
     return () => {
       if (subscription) {
         subscription.remove();
-      }
-      if (simulationInterval) {
-        clearInterval(simulationInterval);
       }
     };
   }, []);
@@ -63,7 +59,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   };
 
   const startTracking = async () => {
-    if (isSimulationMode) {
+    if (state.gameMode === 'simulation') {
       startSimulation();
     } else {
       await startRealTracking();
@@ -75,15 +71,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const initialCoord = simulator.getCurrentLocation();
     setCurrentLocation(initialCoord);
     addTrailPoint(initialCoord);
-
-    // Start simulation interval
-    const interval = setInterval(() => {
-      const coord = simulator.getNextLocation();
-      setCurrentLocation(coord);
-      addTrailPoint(coord);
-    }, 5000); // Update every 5 seconds
-
-    setSimulationInterval(interval);
     setIsTracking(true);
   };
 
@@ -140,36 +127,37 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       subscription.remove();
       setSubscription(null);
     }
-    
-    // Stop simulation
-    if (simulationInterval) {
-      clearInterval(simulationInterval);
-      setSimulationInterval(null);
+  };
+
+  const moveNorth = () => {
+    if (state.gameMode === 'simulation' && isTracking) {
+      const newLocation = simulator.moveNorth();
+      setCurrentLocation(newLocation);
+      addTrailPoint(newLocation);
     }
   };
 
-  const toggleSimulationMode = () => {
-    // Stop current tracking before switching modes
-    if (isTracking) {
-      stopTracking();
-    }
-    
-    setIsSimulationMode(!isSimulationMode);
-    
-    if (!isSimulationMode) {
-      // Switching to simulation mode - reset simulator
-      simulator.reset();
+  const moveSouth = () => {
+    if (state.gameMode === 'simulation' && isTracking) {
+      const newLocation = simulator.moveSouth();
+      setCurrentLocation(newLocation);
+      addTrailPoint(newLocation);
     }
   };
 
-  const changeSimulationRoute = () => {
-    if (isSimulationMode) {
-      simulator.changeRoute();
-      if (isTracking) {
-        // Update to new route's starting location
-        const newLocation = simulator.getCurrentLocation();
-        setCurrentLocation(newLocation);
-      }
+  const moveEast = () => {
+    if (state.gameMode === 'simulation' && isTracking) {
+      const newLocation = simulator.moveEast();
+      setCurrentLocation(newLocation);
+      addTrailPoint(newLocation);
+    }
+  };
+
+  const moveWest = () => {
+    if (state.gameMode === 'simulation' && isTracking) {
+      const newLocation = simulator.moveWest();
+      setCurrentLocation(newLocation);
+      addTrailPoint(newLocation);
     }
   };
 
@@ -179,12 +167,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         currentLocation,
         locationPermission,
         isTracking,
-        isSimulationMode,
         requestPermissions,
         startTracking,
         stopTracking,
-        toggleSimulationMode,
-        changeSimulationRoute,
+        moveNorth,
+        moveSouth,
+        moveEast,
+        moveWest,
       }}
     >
       {children}

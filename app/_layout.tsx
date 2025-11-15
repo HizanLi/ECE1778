@@ -19,10 +19,10 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!session && !inAuthGroup) {
-      // Redirect to login if not authenticated
+      // Redirect to login if not authenticated and not already in auth
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {
-      // Redirect to home if authenticated
+      // Redirect to tabs if authenticated and still in auth group
       router.replace('/(tabs)');
     }
   }, [session, loading, segments]);

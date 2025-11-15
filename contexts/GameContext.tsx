@@ -3,7 +3,7 @@ import { OccupiedArea, GameMode, AppSettings, Coordinate, GeoJSONPolygon } from 
 import { useAuth } from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { insertOccupiedArea, fetchOccupiedAreas } from '../lib/api';
-import { clear } from 'react-native/types_generated/Libraries/LogBox/Data/LogBoxData';
+import { Alert } from 'react-native';
 
 interface GameState {
   occupiedAreas: OccupiedArea[];
@@ -81,18 +81,32 @@ function coordinatesToGeoJSON(coordinates: Coordinate[]): GeoJSONPolygon {
     if (index === 0) return true;
     const prev = geoCoords[index - 1];
     // Keep point if it's different from previous (with tolerance for floating point)
-    return Math.abs(coord[0] - prev[0]) > 0.0000001 || Math.abs(coord[1] - prev[1]) > 0.0000001;
+    return Math.abs(coord[0] - prev[0]) > 0.000001 || Math.abs(coord[1] - prev[1]) > 0.000001;
   });
+  
+  // Remove any duplicate points (not just consecutive)
+  const uniqueCoords: number[][] = [];
+  geoCoords.forEach(coord => {
+    const isDuplicate = uniqueCoords.some(existing => 
+      Math.abs(existing[0] - coord[0]) < 0.000001 && 
+      Math.abs(existing[1] - coord[1]) < 0.000001
+    );
+    if (!isDuplicate) {
+      uniqueCoords.push(coord);
+    }
+  });
+  
+  geoCoords = uniqueCoords;
   
   // Ensure we have at least 3 unique points
   if (geoCoords.length < 3) {
-    throw new Error('Need at least 3 unique points to create a valid polygon');
+    throw new Error('Need at least 3 unique points to create a valid polygon. Try walking a larger area.');
   }
   
   // Close the polygon by adding the first point at the end
   const first = geoCoords[0];
   const last = geoCoords[geoCoords.length - 1];
-  if (first[0] !== last[0] || first[1] !== last[1]) {
+  if (Math.abs(first[0] - last[0]) > 0.000001 || Math.abs(first[1] - last[1]) > 0.000001) {
     geoCoords.push([first[0], first[1]]);
   }
   
@@ -158,7 +172,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const distance = calculateDistance(startPoint, endPoint);
     
     if (distance > 5) {
-      clearTrail();
       throw new Error(`Start and end points must be within 5 meters to claim territory. Current distance: ${distance.toFixed(2)}m`);
     }
 
@@ -192,6 +205,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const fetchAreas = async () => {
     try {
       const areas = await fetchOccupiedAreas();
+      console.log('Fetched occupied areas:', areas);
       dispatch({ type: 'SET_OCCUPIED_AREAS', payload: areas || [] });
     } catch (error) {
       console.error('Error fetching occupied areas:', error);

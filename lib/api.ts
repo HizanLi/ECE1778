@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { supabase } from './supabase';
 
 /**
@@ -103,22 +104,31 @@ export async function fetchUserInfo({
 }: {
   user_id: string;
 }) {
-  const { data: { session } } = await supabase.auth.getSession();
-  const accessToken = session?.access_token;
-  
-  const response = await fetch('https://sguujchuqsbempxbdjif.supabase.co/functions/v1/fetch-username', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    body: JSON.stringify({ user_id })
-  });
-  
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Server error');
-  
-  return data.data;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    
+    const response = await fetch('https://sguujchuqsbempxbdjif.supabase.co/functions/v1/fetch-username', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({ user_id })
+    });
+    
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      console.error('API error fetching user info:', data?.error || `Status ${response.status}`);
+      return null; // Return null instead of throwing
+    }
+    
+    const data = await response.json();
+    return data.data || null;
+  } catch (error: any) {
+    console.error('Error fetching user info:', error);
+    return null; // Return null instead of throwing to prevent crashes
+  }
 }
 
 /**
@@ -137,16 +147,21 @@ export async function fetchOccupiedAreas() {
       },
     });
 
+    Alert.alert('Debug', `Response status: ${res.status}`);
+
     if (!res.ok) {
       const body = await res.json().catch(() => null);
+      console.error('API error fetching occupied areas:', body?.error || `Status ${res.status}`);
       throw new Error(body?.error || `API error, status ${res.status}`);
     }
-
+    //I want to see what the returned json is and how it looks like becuase everytime I come here the app crashes
     const json = await res.json();
-    return json.data;
-  } catch (err) {
+
+    return json.data || [];
+  } catch (err: any) {
     console.error('Error fetching occupied areas:', err);
-    throw err;
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }
 
@@ -168,13 +183,15 @@ export async function getLeaderboard() {
 
     if (!res.ok) {
       const errorBody = await res.json().catch(() => null);
+      console.error('API error fetching leaderboard:', errorBody?.error || `Status ${res.status}`);
       throw new Error(errorBody?.error || `Request failed with status ${res.status}`);
     }
 
     const data = await res.json();
-    return data as { user_name: string; total_area: number }[];
-  } catch (error) {
+    return (data || []) as { user_name: string; total_area: number }[];
+  } catch (error: any) {
     console.error('Error fetching leaderboard:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }

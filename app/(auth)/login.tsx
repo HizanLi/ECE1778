@@ -87,7 +87,7 @@ export default function LoginScreen() {
           />
 
           <Button
-            title="Send Magic Link"
+            title="Sign In with Email"
             onPress={handleEmailSignIn}
             loading={loading}
             style={styles.button}

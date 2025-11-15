@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Switch, Alert, TextInput } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { Button } from '../../components/Button';
@@ -9,12 +10,19 @@ import { colors } from '../../constants/colors';
 import { scheduleDailyReminder, cancelAllNotifications } from '../../utils/notifications';
 
 export default function ProfileScreen() {
-  const { user, signOut, updateProfile } = useAuth();
+  const { user, signOut, updateProfile, refreshUserProfile } = useAuth();
   const { state, setGameMode, updateSettings } = useGame();
   const [signingOut, setSigningOut] = useState(false);
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(user?.user_name || '');
   const [saving, setSaving] = useState(false);
+
+  // Refresh user profile whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshUserProfile();
+    }, [])
+  );
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [

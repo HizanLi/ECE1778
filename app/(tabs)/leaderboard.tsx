@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { LeaderboardItem } from '../../components/LeaderboardItem';
 import { LeaderboardEntry } from '../../types';
@@ -13,9 +14,17 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+
+  useEffect(() => { 
     fetchLeaderboard();
   }, []);
+
+  // Fetch leaderboard whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchLeaderboard();
+    }, [])
+  );
 
   const fetchLeaderboard = async () => {
     try {

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import MapView, { Marker, Polyline, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useFocusEffect } from 'expo-router';
 import { useLocation } from '../../contexts/LocationContext';
 import { useGame } from '../../contexts/GameContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,11 +15,15 @@ export default function MapScreen() {
   const { user } = useAuth();
   const [claiming, setClaiming] = useState(false);
 
-  useEffect(() => {
-    if (currentLocation) {
-      fetchAreas();
-    }
-  }, [currentLocation]);
+  // Fetch areas whenever the screen comes into focus (only if user is logged in)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        fetchAreas();
+      }
+    }, [user])
+  );
+
 
   const handleStartTracking = async () => {
     try {
@@ -46,7 +51,17 @@ export default function MapScreen() {
       Alert.alert('Success!', 'Territory claimed successfully! 🎉');
       // Trail is already cleared in GameContext.claimTerritory on success
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to claim territory');
+      console.error('Claim territory error:', error);
+      let errorMessage = error.message || 'Failed to claim territory';
+      
+      // Provide user-friendly messages for common errors
+      if (errorMessage.includes('TopologyException') || errorMessage.includes('side location conflict')) {
+        errorMessage = 'Invalid territory shape. Your path may have crossed itself. Please try again with a simpler shape.';
+      } else if (errorMessage.includes('lwgeom')) {
+        errorMessage = 'Invalid geometry. Please try walking a different path.';
+      }
+      
+      Alert.alert('Cannot Claim Territory', errorMessage);
       clearTrail(); // Clear the trail on error
     } finally {
       setClaiming(false);
@@ -97,27 +112,46 @@ export default function MapScreen() {
 
         {/* Occupied Areas - Display as polygons */}
         {state.occupiedAreas.map((area, index) => {
-          // Convert GeoJSON coordinates to react-native-maps format
-          const coordinates = area.location.coordinates[0].map(coord => ({
-            latitude: coord[1],
-            longitude: coord[0],
-          }));
-          
-          return (
-            <Polygon
-              key={`area-${area.user_id}-${index}`}
-              coordinates={coordinates}
-              fillColor={
-                area.user_id === user?.user_id
-                  ? colors.myTerritory + '40'
-                  : colors.enemyTerritory + '40'
-              }
-              strokeColor={
-                area.user_id === user?.user_id ? colors.myTerritory : colors.enemyTerritory
-              }
-              strokeWidth={2}
-            />
-          );
+          try {
+            // Handle both Polygon and MultiPolygon types
+            let coordinates;
+            if (area.location.type === 'Polygon') {
+              // Polygon: coordinates[0] is the outer ring
+              coordinates = area.location.coordinates[0].map((coord: any) => ({
+                latitude: coord[1],
+                longitude: coord[0],
+              }));
+            } else if (area.location.type === 'MultiPolygon') {
+              // MultiPolygon: coordinates[0][0] is the first polygon's outer ring
+              coordinates = area.location.coordinates[0][0].map((coord: any) => ({
+                latitude: coord[1],
+                longitude: coord[0],
+              }));
+            } else {
+              // Unknown type, skip this area
+              console.warn(`Unknown geometry type: ${area.location.type}`);
+              return null;
+            }
+            
+            return (
+              <Polygon
+                key={`area-${area.user_id}-${index}`}
+                coordinates={coordinates}
+                fillColor={
+                  area.user_id === user?.user_id
+                    ? colors.myTerritory + '40'
+                    : colors.enemyTerritory + '40'
+                }
+                strokeColor={
+                  area.user_id === user?.user_id ? colors.myTerritory : colors.enemyTerritory
+                }
+                strokeWidth={2}
+              />
+            );
+          } catch (error) {
+            console.error('Error rendering area:', error, area);
+            return null;
+          }
         })}
       </MapView>
 
